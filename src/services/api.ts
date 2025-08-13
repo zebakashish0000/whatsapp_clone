@@ -1,13 +1,8 @@
-import axios from 'axios';
+ import axios from 'axios';
 import { Message, Conversation } from '../types';
 
-// Determine API base dynamically
-const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.MODE === 'production'
-    ? 'https://whatsapp-clone-fmhf.onrender.com/api'
-    : 'http://localhost:3001/api');
-const API_BASE = import.meta.env.VITE_API_URL; // ✅ must match backend env
+// Use only one API_BASE, dynamic fallback
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -44,7 +39,7 @@ export const conversationAPI = {
 };
 
 export const webhookAPI = {
-  simulateWebhook: async (payload: any) => {
+  simulateWebhook: async (payload: unknown) => {
     const response = await api.post('/webhook', payload);
     return response.data;
   },

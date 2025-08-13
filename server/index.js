@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 import webhookRoutes from './routes/webhook.js';
 import messageRoutes from './routes/messages.js';
 import conversationRoutes from './routes/conversations.js';
-import Message from './models/Message.js'; // ✅ ensure correct model path
+import Message from './models/Message.js';
 
 // Load environment variables
 dotenv.config();
@@ -24,29 +24,26 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = createServer(app);
 
+// Define frontend URL for CORS
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+  ? 'https://whatsapp-clone-delta-lemon.vercel.app/' // <-- replace with your deployed frontend URL
+  : 'http://localhost:5173';
+
 // Socket.IO configuration
 const io = new Server(server, {
   cors: {
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? '*' // ⚠ Replace with your production frontend domain for security
-        : ['http://localhost:5173', 'http://localhost:5174'],
+    origin: FRONTEND_URL,
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  transports: ['websocket', 'polling'], // Allow WebSocket & fallback polling
+  transports: ['websocket', 'polling'],
 });
 
 // Middleware
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? '*' // ⚠ Replace with your production frontend domain
-        : ['http://localhost:5173', 'http://localhost:5174'],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -97,7 +94,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Make io instance available to routes (for emitting events)
+// Make io instance available to routes
 app.set('io', io);
 
 // API Routes
@@ -105,18 +102,10 @@ app.use('/api/webhook', webhookRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/conversations', conversationRoutes);
 
-// Simple root route to avoid "Cannot GET /"
-app.get('/', (req, res) => {
-  res.send('Backend is running ✅');
-});
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
+// Root and health endpoints
+app.get('/', (req, res) => res.send('Backend is running ✅'));
+app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString() }));
 
 // Start server
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

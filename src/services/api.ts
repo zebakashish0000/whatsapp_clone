@@ -1,8 +1,12 @@
  import axios from 'axios';
 import { Message, Conversation } from '../types';
 
-// Use environment variable for API base, fallback to localhost
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Determine API base dynamically
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.MODE === 'production'
+    ? 'https://whatsapp-clone-fmhf.onrender.com/api'
+    : 'http://localhost:3001/api');
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -39,7 +43,6 @@ export const conversationAPI = {
 };
 
 export const webhookAPI = {
-  // Simulate webhook payload for testing
   simulateWebhook: async (payload: any) => {
     const response = await api.post('/webhook', payload);
     return response.data;

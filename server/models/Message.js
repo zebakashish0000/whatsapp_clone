@@ -22,5 +22,5 @@ const messageSchema = new mongoose.Schema({
 messageSchema.index({ wa_id: 1, timestamp: -1 });
 messageSchema.index({ wa_id: 1, direction: 1, status: 1 });
 
-// ✅ Prevent duplicate model compilation
+// Prevent duplicate model compilation
 export default mongoose.models.Message || mongoose.model('Message', messageSchema);

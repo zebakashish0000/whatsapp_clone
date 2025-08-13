@@ -8,7 +8,7 @@ const messageSchema = new mongoose.Schema({
   },
   meta_msg_id: {
     type: String,
-    sparse: true
+    sparse: true // keeps sparse index, no need to define it again later
   },
   wa_id: {
     type: String,

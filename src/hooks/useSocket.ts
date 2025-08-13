@@ -16,19 +16,23 @@ export const useSocket = ({
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    // ✅ Socket server URL - use env var if available
+    // Determine backend dynamically based on NODE_ENV
     const socketUrl =
-      import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+      import.meta.env.VITE_SOCKET_URL ||
+      (import.meta.env.MODE === 'production'
+        ? 'https://whatsapp-clone-fmhf.onrender.com'
+        : 'http://localhost:3001');
 
-    // ✅ Init socket (allow default polling → upgrade to WS)
+    // Init Socket.IO
     const socket = io(socketUrl, {
+      transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,
     });
 
     socketRef.current = socket;
 
-    // --- Connection events ---
+    // Connection events
     socket.on('connect', () => {
       console.log(`✅ Connected to socket server: ${socket.id}`);
     });
@@ -41,30 +45,27 @@ export const useSocket = ({
       console.warn(`⚠️ Disconnected from socket server: ${reason}`);
     });
 
-    // --- Custom app events ---
+    // Custom app events
     socket.on('new-message', (message: Message) => {
-      console.log('📩 New message received:', message);
       onNewMessage?.(message);
     });
 
     socket.on('message-status-update', (data: { id: string; status: string }) => {
-      console.log('📊 Message status updated:', data);
       onMessageStatusUpdate?.(data);
     });
 
     socket.on('conversation-update', (data: { wa_id: string; lastMessage: Message }) => {
-      console.log('🗂 Conversation updated:', data);
       onConversationUpdate?.(data);
     });
 
-    // ✅ Cleanup on unmount
+    // Cleanup
     return () => {
       socket.disconnect();
-      console.log('🔌 Socket disconnected on component unmount');
+      console.log('🔌 Socket disconnected on unmount');
     };
   }, [onNewMessage, onMessageStatusUpdate, onConversationUpdate]);
 
-  // --- Emitters ---
+  // Emitters
   const joinConversation = (waId: string) => {
     socketRef.current?.emit('join-conversation', waId);
   };

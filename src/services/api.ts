@@ -1,7 +1,8 @@
-import axios from 'axios';
+ import axios from 'axios';
 import { Message, Conversation } from '../types';
 
-const API_BASE = 'http://localhost:3001/api';
+// Use environment variable for API base, fallback to localhost
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -14,7 +15,7 @@ export const messageAPI = {
     return response.data;
   },
 
-  sendMessage: async (waId: string, body: string, type = 'text') => {
+  sendMessage: async (waId: string, body: string, type: string = 'text') => {
     const response = await api.post('/messages', { wa_id: waId, body, type });
     return response.data;
   },
@@ -38,7 +39,7 @@ export const conversationAPI = {
 };
 
 export const webhookAPI = {
-  // For testing purposes - simulate webhook payload
+  // Simulate webhook payload for testing
   simulateWebhook: async (payload: any) => {
     const response = await api.post('/webhook', payload);
     return response.data;

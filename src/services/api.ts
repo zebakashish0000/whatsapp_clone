@@ -2,7 +2,12 @@
 import { Message, Conversation } from '../types';
 
 // Use VITE_API_URL from env
-const API_BASE = import.meta.env.VITE_API_URL as string;
+// Use backend API based on environment
+const API_BASE =
+  import.meta.env.MODE === 'development'
+    ? 'http://localhost:3001/api' // local dev
+    : 'https://whatsapp-clone-fmhf.onrender.com/api'; // Vercel
+
 
 const api = axios.create({
   baseURL: API_BASE,

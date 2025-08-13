@@ -7,47 +7,44 @@ import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Routes
 import webhookRoutes from './routes/webhook.js';
 import messageRoutes from './routes/messages.js';
 import conversationRoutes from './routes/conversations.js';
 import Message from './models/Message.js';
 
-// Load environment variables
 dotenv.config();
 
-// Resolve __dirname (ESM compatible)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Init Express + Node HTTP server
 const app = express();
 const server = createServer(app);
 
-// Define frontend URL for CORS
-const FRONTEND_URL = process.env.NODE_ENV === 'production'
-  ? 'https://whatsapp-clone-delta-lemon.vercel.app/' // <-- replace with your deployed frontend URL
-  : 'http://localhost:5173';
+// ✅ Allow both localhost & Vercel frontend URLs
+const FRONTEND_URLS = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://whatsapp-clone-delta-lemon.vercel.app' // replace with your actual deployed frontend
+];
 
-// Socket.IO configuration
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: FRONTEND_URLS,
     methods: ['GET', 'POST'],
     credentials: true,
   },
   transports: ['websocket', 'polling'],
 });
 
-// Middleware
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: FRONTEND_URLS,
   credentials: true,
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend (only in production)
+// Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
   app.get('*', (req, res) => {
@@ -57,7 +54,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Connect to MongoDB
+// MongoDB
 mongoose
   .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/whatsapp', {
     dbName: 'whatsapp',
@@ -65,7 +62,7 @@ mongoose
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// Socket.IO events
+// Socket.IO
 io.on('connection', (socket) => {
   console.log('🟢 User connected:', socket.id);
 
@@ -83,7 +80,6 @@ io.on('connection', (socket) => {
     try {
       const savedMessage = await Message.create(messageData);
       io.to(messageData.waId).emit('new-message', savedMessage);
-      console.log('💾 Message saved & broadcasted:', savedMessage);
     } catch (err) {
       console.error('❌ Error saving message:', err);
     }
@@ -94,18 +90,16 @@ io.on('connection', (socket) => {
   });
 });
 
-// Make io instance available to routes
 app.set('io', io);
 
-// API Routes
+// Routes
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/conversations', conversationRoutes);
 
-// Root and health endpoints
+// Health
 app.get('/', (req, res) => res.send('Backend is running ✅'));
 app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString() }));
 
-// Start server
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

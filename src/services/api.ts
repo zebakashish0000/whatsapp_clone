@@ -1,4 +1,4 @@
- import axios from 'axios';
+import axios from 'axios';
 import { Message, Conversation } from '../types';
 
 // Determine API base dynamically
@@ -7,6 +7,7 @@ const API_BASE =
   (import.meta.env.MODE === 'production'
     ? 'https://whatsapp-clone-fmhf.onrender.com/api'
     : 'http://localhost:3001/api');
+const API_BASE = import.meta.env.VITE_API_URL; // ✅ must match backend env
 
 const api = axios.create({
   baseURL: API_BASE,

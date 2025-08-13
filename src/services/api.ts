@@ -1,8 +1,8 @@
  import axios from 'axios';
 import { Message, Conversation } from '../types';
 
-// ✅ Use VITE_API_URL if available, fallback to localhost for dev
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Use VITE_API_URL from env
+const API_BASE = import.meta.env.VITE_API_URL as string;
 
 const api = axios.create({
   baseURL: API_BASE,

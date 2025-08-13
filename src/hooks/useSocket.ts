@@ -16,8 +16,7 @@ export const useSocket = ({
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    // ✅ Always use env var
-    const socketUrl = import.meta.env.VITE_SOCKET_URL;
+    const socketUrl = import.meta.env.VITE_SOCKET_URL as string;
 
     const socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
@@ -27,25 +26,17 @@ export const useSocket = ({
 
     socketRef.current = socket;
 
-    socket.on('connect', () => {
-      console.log(`✅ Connected to socket server: ${socket.id}`);
-    });
-
-    socket.on('connect_error', (err) => {
-      console.error('❌ Socket connection error:', err.message);
-    });
-
-    socket.on('disconnect', (reason) => {
-      console.warn(`⚠️ Disconnected from socket server: ${reason}`);
-    });
+    socket.on('connect', () => console.log(`✅ Connected: ${socket.id}`));
+    socket.on('connect_error', (err) => console.error('❌ Socket error:', err.message));
+    socket.on('disconnect', (reason) => console.warn(`⚠️ Disconnected: ${reason}`));
 
     socket.on('new-message', (message: Message) => onNewMessage?.(message));
-    socket.on('message-status-update', (data: { id: string; status: string }) => onMessageStatusUpdate?.(data));
-    socket.on('conversation-update', (data: { wa_id: string; lastMessage: Message }) => onConversationUpdate?.(data));
+    socket.on('message-status-update', (data) => onMessageStatusUpdate?.(data));
+    socket.on('conversation-update', (data) => onConversationUpdate?.(data));
 
     return () => {
       socket.disconnect();
-      console.log('🔌 Socket disconnected on unmount');
+      console.log('🔌 Socket disconnected');
     };
   }, [onNewMessage, onMessageStatusUpdate, onConversationUpdate]);
 

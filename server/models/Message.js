@@ -56,12 +56,11 @@ const messageSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true,
-  collection: 'WP Data'  // fixed to match your actual collection name
+  collection: 'WP Data'
 });
 
 // Indexes
 messageSchema.index({ wa_id: 1, timestamp: -1 });
-messageSchema.index({ meta_msg_id: 1 });
 messageSchema.index({ wa_id: 1, direction: 1, status: 1 });
 
 export default mongoose.model('Message', messageSchema);

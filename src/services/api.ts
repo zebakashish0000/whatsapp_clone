@@ -1,45 +1,67 @@
- import axios from 'axios';
-import { Message, Conversation } from '../types';
+ import axios from "axios";
 
-// ✅ Always use VITE_API_URL from .env / .env.local, with localhost fallback
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+/**
+ * Safe environment variable getter
+ * Works in both Vite (frontend) and Node.js (backend)
+ */
+function getEnvVar(key: string, fallback: string): string {
+  // Vite env (frontend)
+  if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env[key] !== undefined) {
+    return import.meta.env[key] as string;
+  }
+  // Node.js env (backend)
+  if (typeof process !== "undefined" && process.env && process.env[key] !== undefined) {
+    return process.env[key] as string;
+  }
+  return fallback;
+}
 
-console.log('📡 API URL in use:', API_BASE); // debug log
+/**
+ * Detect current environment mode safely
+ */
+const mode =
+  (typeof import.meta !== "undefined" && import.meta.env?.MODE) ||
+  (typeof process !== "undefined" && process.env?.NODE_ENV) ||
+  "development";
 
+/**
+ * Determine API Base URL
+ */
+const API_BASE_URL =
+  mode === "development"
+    ? getEnvVar("VITE_API_URL", "http://localhost:3001/api")
+    : getEnvVar("VITE_API_URL", "https://whatsapp-clone-fmhf.onrender.com/api");
+
+console.log(`📡 Mode: ${mode} | API: ${API_BASE_URL}`);
+
+/**
+ * Axios instance
+ */
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: API_BASE_URL,
   timeout: 30000,
 });
 
-export const messageAPI = {
-  getMessages: async (waId: string, page = 1, limit = 50) => {
-    const response = await api.get(`/messages/${waId}?page=${page}&limit=${limit}`);
-    return response.data;
-  },
-  sendMessage: async (waId: string, body: string, type = 'text') => {
-    const response = await api.post('/messages', { wa_id: waId, body, type });
-    return response.data;
-  },
-  updateMessageStatus: async (id: string, status: string) => {
-    const response = await api.patch(`/messages/${id}/status`, { status });
-    return response.data;
-  },
-};
-
+/**
+ * Conversations API
+ */
 export const conversationAPI = {
-  getConversations: async (): Promise<Conversation[]> => {
-    const response = await api.get('/conversations');
-    return response.data;
-  },
-  markAsRead: async (waId: string) => {
-    const response = await api.patch(`/conversations/${waId}/read`);
-    return response.data;
+  async getConversations() {
+    const res = await api.get("/conversations");
+    return res.data;
   },
 };
 
-export const webhookAPI = {
-  simulateWebhook: async (payload: any) => {
-    const response = await api.post('/webhook', payload);
-    return response.data;
+/**
+ * Messages API
+ */
+export const messageAPI = {
+  async getMessages(waId: string, page = 1, limit = 50) {
+    const res = await api.get(`/messages/${waId}`, {
+      params: { page, limit },
+    });
+    return res.data;
   },
 };
+
+export default api;

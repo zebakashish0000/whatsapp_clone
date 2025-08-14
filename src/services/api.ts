@@ -1,12 +1,13 @@
  import axios from 'axios';
 import { Message, Conversation } from '../types';
 
-// ✅ Use VITE_API_URL if available, fallback to localhost for dev
-const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.MODE === 'production'
-    ? 'https://whatsapp-clone-fmhf.onrender.com/api' // Vercel backend
-    : 'http://localhost:3001/api'); // local backend
+// ✅ Explicit local vs production check
+const isProd = import.meta.env.MODE === 'production';
+
+const API_BASE = import.meta.env.VITE_API_URL || 
+  (isProd
+    ? 'https://whatsapp-clone-fmhf.onrender.com/api'
+    : 'http://localhost:3001/api');
 
 const api = axios.create({
   baseURL: API_BASE,

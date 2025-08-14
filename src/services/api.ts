@@ -1,14 +1,14 @@
  import axios from 'axios';
 import { Message, Conversation } from '../types';
 
-// ✅ Explicit local vs production check
-const isProd = import.meta.env.MODE === 'production';
+// ✅ Determine environment & allow override
+const API_BASE =
+  import.meta.env.VITE_API_URL || // highest priority → use .env value if set
+  (import.meta.env.MODE === 'development'
+    ? 'http://localhost:3001/api' // fallback for local dev
+    : 'https://whatsapp-clone-fmhf.onrender.com/api'); // fallback for prod
 
-const API_BASE = import.meta.env.VITE_API_URL || 
-  (isProd
-    ? 'https://whatsapp-clone-fmhf.onrender.com/api'
-    : 'http://localhost:3001/api');
-
+// Create Axios instance
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 30000,

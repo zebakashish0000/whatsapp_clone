@@ -1,21 +1,20 @@
  import axios from 'axios';
 import { Message, Conversation } from '../types';
 
-// ✅ Priority: VITE_API_URL (from .env) → Dev URL → Production URL
-// ✅ Use VITE_API_URL if available, otherwise fallback to dev/prod
+// ✅ Use VITE_API_URL if available, otherwise fallback
 const API_BASE =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.MODE === 'development'
-    ? 'http://localhost:3001/api' // Local dev
-    : 'https://whatsapp-clone-fmhf.onrender.com/api'); // Production
+    ? 'http://localhost:3001/api'
+    : 'https://whatsapp-clone-fmhf.onrender.com/api');
 
-// Create Axios instance
+console.log("🔗 API_BASE =", API_BASE);
+
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 30000,
 });
 
-// -------------------- Message API --------------------
 export const messageAPI = {
   getMessages: async (waId: string, page = 1, limit = 50) => {
     const response = await api.get(`/messages/${waId}?page=${page}&limit=${limit}`);
@@ -33,7 +32,6 @@ export const messageAPI = {
   },
 };
 
-// -------------------- Conversation API --------------------
 export const conversationAPI = {
   getConversations: async (): Promise<Conversation[]> => {
     const response = await api.get('/conversations');
@@ -46,7 +44,6 @@ export const conversationAPI = {
   },
 };
 
-// -------------------- Webhook API --------------------
 export const webhookAPI = {
   simulateWebhook: async (payload: any) => {
     const response = await api.post('/webhook', payload);

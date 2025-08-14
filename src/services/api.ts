@@ -2,10 +2,11 @@
 import { Message, Conversation } from '../types';
 
 // ✅ Priority: VITE_API_URL (from .env) → Dev URL → Production URL
+// ✅ Use VITE_API_URL if available, otherwise fallback to dev/prod
 const API_BASE =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.MODE === 'development'
-    ? 'http://localhost:3001/api' // Local development
+    ? 'http://localhost:3001/api' // Local dev
     : 'https://whatsapp-clone-fmhf.onrender.com/api'); // Production
 
 // Create Axios instance

@@ -20,11 +20,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = createServer(app);
 
-// ✅ Allow both localhost & Vercel frontend URLs
+// Allow localhost + deployed frontend
 const FRONTEND_URLS = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://whatsapp-clone-delta-lemon.vercel.app' // replace with your actual deployed frontend
+  process.env.FRONTEND_URL, // set in Vercel env
 ];
 
 const io = new Server(server, {
@@ -36,11 +36,7 @@ const io = new Server(server, {
   transports: ['websocket', 'polling'],
 });
 
-app.use(cors({
-  origin: FRONTEND_URLS,
-  credentials: true,
-}));
-
+app.use(cors({ origin: FRONTEND_URLS, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -99,7 +95,9 @@ app.use('/api/conversations', conversationRoutes);
 
 // Health
 app.get('/', (req, res) => res.send('Backend is running ✅'));
-app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString() }));
+app.get('/api/health', (req, res) =>
+  res.json({ status: 'OK', timestamp: new Date().toISOString() })
+);
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
